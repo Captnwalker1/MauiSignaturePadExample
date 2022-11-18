@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 
 namespace MauiSignaturePadApp;
@@ -23,10 +24,23 @@ public partial class MauiSignaturePad : ContentView
     {
         var drawingLines = DrawingViewControl.Lines.ToList();
         var points = drawingLines.SelectMany(x => x.Points).ToList();
+        var borderline = MakeBorderLine(points,DrawingViewControl.LineWidth);
+        drawingLines.Add(borderline);
         return await DrawingView.GetImageStream(drawingLines,
             new Size(points.Max(x => x.X) - points.Min(x => x.X), points.Max(x => x.Y) - points.Min(x => x.Y)),
             Colors.White);
         //return await DrawingViewControl.GetImageStream(DrawingViewControl.Width, DrawingViewControl.Height);
+    }
+
+    private DrawingLine MakeBorderLine(List<PointF> points,float lineWidth)
+    {
+        var line = new DrawingLine();
+        line.LineColor = Color.FromArgb("00000000");
+        line.Points.Add(new PointF(points.Min(x => x.X) + lineWidth,points.Min(y => y.Y) - lineWidth));
+        line.Points.Add(new PointF(points.Min(x => x.X) - lineWidth, points.Max(y => y.Y) + lineWidth));
+        line.Points.Add(new PointF(points.Max(x => x.X) + lineWidth, points.Min(y => y.Y) - lineWidth));
+        line.Points.Add(new PointF(points.Max(x => x.X) + lineWidth, points.Max(y => y.Y) + lineWidth));
+        return line;
     }
 
     private void DrawingLineCompleted(object sender, DrawingLineCompletedEventArgs e)
